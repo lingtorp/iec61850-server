@@ -1,0 +1,6 @@
+**/build
+**/build_win32
+*.exe
+*.o
+*.BIN
+*.bin
