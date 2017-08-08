@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
+
 #include "sv_publisher.h"
 
 /* Forward declarations */
@@ -41,14 +43,16 @@ public:
   }
 
   void set_value(Value value, float val) {
+    assert(value.type == ValueType::FLOAT);
     SV_ASDU_setFLOAT(_asdu, value.id, val);
   }
 
   void set_value(Value value, int val) {
+    assert(value.type == ValueType::INT);
     SV_ASDU_setINT32(_asdu, value.id, val);
   }
 
-  void increment_sample_count(int count = 1) {
+  void increment_sample_count() {
     SV_ASDU_increaseSmpCnt(_asdu);
   }
 
@@ -77,6 +81,10 @@ public:
       channel.increment_sample_count();
     }
     SampledValuesPublisher_publish(_publisher);
+  }
+
+  void setup_complete() {
+    SampledValuesPublisher_setupComplete(_publisher);
   }
 
 private:

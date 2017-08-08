@@ -77,22 +77,19 @@ int main(int argc, char** argv) {
     nk_sdl_font_stash_end();
 
     /* Sampled values server setup*/
-    char* interface;
-    interface = "ens33";
-    printf("Using interface %s\n", interface);
+    std::string interface = "ens33";
+    printf("Using interface %s\n", interface.c_str());
 
-    /*
     Publisher publisher{interface};
 
     Channel* channel1 = publisher.add_channel("svpub1");
-    Value val1 = channel1->create_float_value();
 
-    Channel* channel2 = publisher.add_channel("svpub2");
-    Value val2 = channel2->create_int_value();
+    Value val1 = channel1->create_float_value();
+    Value val2 = channel1->create_float_value();
 
     publisher.setup_complete();
 
-    */
+    /*
     SampledValuesPublisher svPublisher = SampledValuesPublisher_create(NULL, interface);
 
     SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
@@ -106,9 +103,10 @@ int main(int argc, char** argv) {
     int float4 = SV_ASDU_addFLOAT(asdu2);
 
     SampledValuesPublisher_setupComplete(svPublisher);
+    */
 
     float fVal1 = 1234.5678f;
-    float fVal2 = 0.12345f;
+    float fVal2 = 0.1234f;
 
     while(running) {
       /* Input */
@@ -172,6 +170,7 @@ int main(int argc, char** argv) {
       SDL_GL_SwapWindow(win);
 
       /* Sampled values server */
+      /*
       SV_ASDU_setFLOAT(asdu1, float1, fVal1);
       SV_ASDU_setFLOAT(asdu1, float2, fVal2);
 
@@ -182,20 +181,17 @@ int main(int argc, char** argv) {
       fVal2 += 0.1f;
 
       SampledValuesPublisher_publish(svPublisher);
-
-      /*
+      */
       channel1->set_value(val1, fVal1);
-      channel2->set_value(val2, fVal2);
+      channel1->set_value(val2, fVal2);
 
       fVal1 += 1.1f;
       fVal2 += 0.1f;
 
       publisher.broadcast();
-      */
 
       Thread_sleep(50);
     }
 cleanup:
-    SampledValuesPublisher_destroy(svPublisher);
     return 0;
 }
