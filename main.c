@@ -71,19 +71,35 @@ int main(int argc, char** argv) {
 
     ctx = nk_sdl_init(win);
 
-    /* Load Fonts: if none of these are loaded a default font will be used  */
-    /* Load Cursor: if you uncomment cursor loading please hide the cursor */
-    {struct nk_font_atlas *atlas;
+    /* Load Fonts: if none of these are loaded a default font will be used */
+    struct nk_font_atlas *atlas;
     nk_sdl_font_stash_begin(&atlas);
-    /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-    struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../Roboto-Regular.ttf", 16, 0);
-    /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
-    /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
-    /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
-    /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
+    struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../Roboto-Regular.ttf", 16, 0); // Can be safely removed
     nk_sdl_font_stash_end();
-    /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
-    /*nk_style_set_font(ctx, &roboto->handle)*/;}
+
+    /* Sampled values server setup*/
+    char* interface;
+    interface = "ens33";
+
+    printf("Using interface %s\n", interface);
+
+    SampledValuesPublisher svPublisher = SampledValuesPublisher_create(NULL, interface);
+
+    SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
+
+    int float1 = SV_ASDU_addFLOAT(asdu1);
+    int float2 = SV_ASDU_addFLOAT(asdu1);
+
+    SV_ASDU asdu2 = SampledValuesPublisher_addASDU(svPublisher, "svpub2", NULL, 1);
+
+    int float3 = SV_ASDU_addFLOAT(asdu2);
+    int float4 = SV_ASDU_addFLOAT(asdu2);
+
+    SampledValuesPublisher_setupComplete(svPublisher);
+
+    float fVal1 = 1234.5678f;
+    float fVal2 = 0.12345f;
+    int i;
 
     while(running) {
       /* Input */
@@ -149,48 +165,22 @@ int main(int argc, char** argv) {
       nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);}
 
       SDL_GL_SwapWindow(win);
+
+      /* Sampled values server */
+      SV_ASDU_setFLOAT(asdu1, float1, fVal1);
+      SV_ASDU_setFLOAT(asdu1, float2, fVal2);
+
+      SV_ASDU_increaseSmpCnt(asdu1);
+      SV_ASDU_increaseSmpCnt(asdu2);
+
+      fVal1 += 1.1f;
+      fVal2 += 0.1f;
+
+      SampledValuesPublisher_publish(svPublisher);
+
+      Thread_sleep(50);
     }
 cleanup:
-    return 0;
-    char* interface;
-
-    interface = "5";
-
-    printf("Using interface %s\n", interface);
-
-    SampledValuesPublisher svPublisher = SampledValuesPublisher_create(NULL, interface);
-
-    SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
-
-    int float1 = SV_ASDU_addFLOAT(asdu1);
-    int float2 = SV_ASDU_addFLOAT(asdu1);
-
-    SV_ASDU asdu2 = SampledValuesPublisher_addASDU(svPublisher, "svpub2", NULL, 1);
-
-    int float3 = SV_ASDU_addFLOAT(asdu2);
-    int float4 = SV_ASDU_addFLOAT(asdu2);
-
-    SampledValuesPublisher_setupComplete(svPublisher);
-
-    float fVal1 = 1234.5678f;
-    float fVal2 = 0.12345f;
-
-    int i;
-
-    while (running) {
-        SV_ASDU_setFLOAT(asdu1, float1, fVal1);
-        SV_ASDU_setFLOAT(asdu1, float2, fVal2);
-
-        SV_ASDU_increaseSmpCnt(asdu1);
-        SV_ASDU_increaseSmpCnt(asdu2);
-
-        fVal1 += 1.1f;
-        fVal2 += 0.1f;
-
-        SampledValuesPublisher_publish(svPublisher);
-
-        Thread_sleep(50);
-    }
-
     SampledValuesPublisher_destroy(svPublisher);
+    return 0;
 }
