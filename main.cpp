@@ -26,8 +26,6 @@
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
 #define APP_NAME "IEC61850-Server"
-#define FLOAT_MAX 99.99f
-#define FLOAT_MIN -FLOAT_MAX
 
 #include <signal.h>
 #include <stdio.h>
@@ -42,8 +40,7 @@ void sigint_handler(int signalId) {
 
 int main(int argc, char** argv) {
     /* Platform */
-    SDL_Window *win;
-    SDL_GLContext glContext;
+    SDL_Window* win;
     struct nk_color background;
     int win_width, win_height;
 
@@ -61,7 +58,7 @@ int main(int argc, char** argv) {
     win = SDL_CreateWindow(APP_NAME,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_ALLOW_HIGHDPI);
-    glContext = SDL_GL_CreateContext(win);
+    SDL_GL_CreateContext(win);
     SDL_GetWindowSize(win, &win_width, &win_height);
 
     /* OpenGL setup */
@@ -74,16 +71,14 @@ int main(int argc, char** argv) {
 
     ctx = nk_sdl_init(win);
 
-    /* Load Fonts: if none of these are loaded a default font will be used */
+    /* Load Fonts: loads the default font */
     struct nk_font_atlas *atlas;
     nk_sdl_font_stash_begin(&atlas);
-    struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../Roboto-Regular.ttf", 16, 0); // Can be safely removed
     nk_sdl_font_stash_end();
 
     /* Sampled values server setup*/
     char* interface;
     interface = "ens33";
-
     printf("Using interface %s\n", interface);
 
     SampledValuesPublisher svPublisher = SampledValuesPublisher_create(NULL, interface);
