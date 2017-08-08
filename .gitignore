@@ -7,3 +7,5 @@
 *.cache
 *.pdb
 *.tl
+Makefile-sdl2
+main-sdl2.c
