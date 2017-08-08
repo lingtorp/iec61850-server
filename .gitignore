@@ -4,3 +4,6 @@
 *.o
 *.BIN
 *.bin
+*.cache
+*.pdb
+*.tl
