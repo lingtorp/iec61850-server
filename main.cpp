@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include "hal_thread.h"
-#include "sv_publisher.h"
+#include "publisher.hpp"
 
 static bool running = true;
 
@@ -81,6 +81,18 @@ int main(int argc, char** argv) {
     interface = "ens33";
     printf("Using interface %s\n", interface);
 
+    /*
+    Publisher publisher{interface};
+
+    Channel* channel1 = publisher.add_channel("svpub1");
+    Value val1 = channel1->create_float_value();
+
+    Channel* channel2 = publisher.add_channel("svpub2");
+    Value val2 = channel2->create_int_value();
+
+    publisher.setup_complete();
+
+    */
     SampledValuesPublisher svPublisher = SampledValuesPublisher_create(NULL, interface);
 
     SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
@@ -97,7 +109,6 @@ int main(int argc, char** argv) {
 
     float fVal1 = 1234.5678f;
     float fVal2 = 0.12345f;
-    int i;
 
     while(running) {
       /* Input */
@@ -171,6 +182,16 @@ int main(int argc, char** argv) {
       fVal2 += 0.1f;
 
       SampledValuesPublisher_publish(svPublisher);
+
+      /*
+      channel1->set_value(val1, fVal1);
+      channel2->set_value(val2, fVal2);
+
+      fVal1 += 1.1f;
+      fVal2 += 0.1f;
+
+      publisher.broadcast();
+      */
 
       Thread_sleep(50);
     }
