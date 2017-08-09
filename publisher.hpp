@@ -15,8 +15,10 @@ class Publisher;
 /** All of the types a Value in a channel can have */
 enum ValueType { INT, FLOAT };
 
-/**  */
-enum ValueConfig { MANUAL, SIN };
+/** Dictactes what type of value manipulation is done on the value */
+/** SINUS = system simulates a sinus wave [-1.0f, 1.0f] */
+/** MANUAL = system allows user to send whatever the is inputted in the GUI */
+enum ValueConfig { MANUAL, SINUS };
 
 /**
  * Value
@@ -50,15 +52,7 @@ public:
     Value value;
     value.type = ValueType::FLOAT;
     value.id = SV_ASDU_addFLOAT(_asdu);
-    values.push_back(value);
-    return value;
-  }
-
-  /** Creates a Value (more like a variable) in the channel */
-  Value create_int_value() {
-    Value value;
-    value.type = ValueType::INT;
-    value.id = SV_ASDU_addINT32(_asdu);
+    value.config = ValueConfig::MANUAL;
     values.push_back(value);
     return value;
   }
@@ -67,12 +61,6 @@ public:
   void set_value(Value value, float val) {
     assert(value.type == ValueType::FLOAT);
     SV_ASDU_setFLOAT(_asdu, value.id, val);
-  }
-
-  /** Sets the channel's Value (more like a variable) to val */
-  void set_value(Value value, int val) {
-    assert(value.type == ValueType::INT);
-    SV_ASDU_setINT32(_asdu, value.id, val);
   }
 
   /** Increments the sample count of the channel */
