@@ -30,7 +30,12 @@
 #include "hal_thread.h"
 #include "publisher.hpp"
 
+/** Main loop variable */
 static bool running = true;
+/** Global variable simulating a sinus wave */
+static float sinus_value = 0.0f;
+/** Number of milliseconds between each broadcast */
+static int sample_rate = 20;
 
 /** Changes the style of the nk_button into a greyed on, returns the old style */
 nk_style_button greyed_out_button(nk_context *ctx) {
@@ -95,6 +100,8 @@ int main(int argc, char** argv) {
     channel1->create_float_value();
     channel1->create_float_value();
 
+    /** Number of loops performed by the mainloop */
+    static uint64_t loops = 0;
     while(running) {
       /* Input */
       SDL_Event evt;
@@ -128,17 +135,28 @@ int main(int argc, char** argv) {
           nk_layout_row_end(ctx);
           nk_menubar_end(ctx);
 
-          nk_layout_row_dynamic(ctx, 35, 1);
-          if(nk_group_begin(ctx, "Status", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
+          nk_layout_row_dynamic(ctx, 70, 1);
+          if(nk_group_begin(ctx, "", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
             nk_layout_row_dynamic(ctx, 25, 2);
-            nk_label(ctx, "SERVER:", NK_TEXT_LEFT);
+            nk_label(ctx, "SERVER:", NK_TEXT_RIGHT);
             if (publisher.running) {
               nk_label_colored(ctx, "RUNNING", NK_TEXT_CENTERED, nk_rgb(0, 255, 0));
             } else {
               nk_label_colored(ctx, "STOPPED", NK_TEXT_CENTERED, nk_rgb(255, 0, 0));
             }
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_property_int(ctx, "Sample rate (hz)", 1, &sample_rate, 1000, 1, 1);
             nk_group_end(ctx);
           }
+
+          /* Padding */
+          nk_layout_row_dynamic(ctx, 10, 2);
+          nk_label(ctx, "", NK_TEXT_LEFT);
+
+          /* Padding */
+          nk_layout_row_dynamic(ctx, 10, 1);
+          nk_label(ctx, "---------------- CHANNELS ----------------", NK_TEXT_CENTERED);
+
           /* Padding */
           nk_layout_row_dynamic(ctx, 10, 2);
           nk_label(ctx, "", NK_TEXT_LEFT);
@@ -180,21 +198,24 @@ int main(int argc, char** argv) {
               nk_property_float(ctx, "Value:", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
               /* Only enable data to be set when setup is completed */
               if (publisher.setup_completed) {
-                channel.set_value(channel.values[j], values[i][j]);
-                // channel.values[i] += 1;
-              }
-              /* Only able to remove the last value */
-              if (j == channel.values.size() - 1) {
-                /* Greyed out buttons during broadcasting */
-                if (!publisher.running) {
-                  if (nk_button_label(ctx, "Remove value")) {
-                    channel.values.pop_back();
-                  }
-                } else {
-                  nk_style_button button = greyed_out_button(ctx);
-                  nk_button_label(ctx, "Remove value");
-                  ctx->style.button = button;
+                switch (channel.values[j].config) {
+                  case ValueConfig::MANUAL:
+                    channel.set_value(channel.values[j], values[i][j]);
+                    break;
+                  case ValueConfig::SINUS:
+                    channel.set_value(channel.values[j], sinus_value);
+                    break;
                 }
+              }
+              if(nk_group_begin(ctx, "", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
+                nk_layout_row_dynamic(ctx, 25, 2);
+                if (nk_option_label(ctx, "SINUS", channel.values[j].config == SINUS)) {
+                  channel.values[j].config = ValueConfig::SINUS;
+                }
+                if (nk_option_label(ctx, "MANUAL", channel.values[j].config == MANUAL)) {
+                  channel.values[j].config = ValueConfig::MANUAL;
+                }
+                nk_group_end(ctx);
               }
             }
 
@@ -203,7 +224,17 @@ int main(int argc, char** argv) {
             nk_label(ctx, "", NK_TEXT_LEFT);
 
             nk_layout_row_dynamic(ctx, 25, 2);
-            nk_label(ctx, "", NK_TEXT_LEFT);
+            /* Only able to remove the last value */
+            /* Greyed out buttons during broadcasting */
+            if (!publisher.running) {
+              if (nk_button_label(ctx, "Remove value")) {
+                channel.values.pop_back();
+              }
+            } else {
+              nk_style_button button = greyed_out_button(ctx);
+              nk_button_label(ctx, "Remove value");
+              ctx->style.button = button;
+            }
             /* Greyed out buttons during broadcasting */
             if (!publisher.running) {
               if (nk_button_label(ctx, "New value")) {
@@ -254,9 +285,13 @@ int main(int argc, char** argv) {
       nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);}
       SDL_GL_SwapWindow(win);
 
+      /* Simulate sinus wave */
+      sinus_value = std::sin(0.01f * loops);
+      loops++;
+
       /* Sampled values server */
       publisher.broadcast();
-      Thread_sleep(50);
+      Thread_sleep(std::round(1000/sample_rate));
     }
 cleanup:
     return 0;
