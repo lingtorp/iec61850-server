@@ -34,10 +34,6 @@
 
 static bool running = true;
 
-void sigint_handler(int signalId) {
-    running = 0;
-}
-
 /** Changes the style of the nk_button into a greyed on, returns the old style */
 nk_style_button greyed_out_button(nk_context *ctx) {
   struct nk_style_button button;
