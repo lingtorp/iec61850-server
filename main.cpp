@@ -149,6 +149,9 @@ int main(int argc, char** argv) {
             }
             nk_group_end(ctx);
           }
+          /* Padding */
+          nk_layout_row_dynamic(ctx, 30, 2);
+          nk_label(ctx, "", NK_TEXT_LEFT);
 
           /* Channel panes */
           static float values[Publisher::MAX_NUM_CHANNELS][Channel::MAX_NUM_VALUES];
