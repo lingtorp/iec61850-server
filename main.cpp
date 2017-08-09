@@ -1,7 +1,5 @@
 /*
- *
  * Example program for Sampled Values (SV) subscriber
- *
  */
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
@@ -93,7 +91,7 @@ int main(int argc, char** argv) {
 
     Publisher publisher{interface};
     /* Default channel and values */
-    Channel* channel1 = publisher.add_channel("svpub1");
+    Channel* channel1 = publisher.add_channel("longnamechanneltotesttheguiandotherstuffaswell");
     channel1->create_float_value();
     channel1->create_float_value();
 
@@ -140,18 +138,20 @@ int main(int argc, char** argv) {
           nk_layout_row_end(ctx);
           nk_menubar_end(ctx);
 
-          nk_layout_row_dynamic(ctx, 25, 2);
-          nk_label(ctx, "SERVER:", NK_TEXT_LEFT);
-          if (publisher.running) {
-            nk_label_colored(ctx, "RUNNING", NK_TEXT_CENTERED, nk_rgb(0, 255, 0));
-          } else {
-            nk_label_colored(ctx, "STOPPED", NK_TEXT_CENTERED, nk_rgb(255, 0, 0));
+          nk_layout_row_dynamic(ctx, 35, 1);
+          if(nk_group_begin(ctx, "Status", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
+            nk_layout_row_dynamic(ctx, 25, 2);
+            nk_label(ctx, "SERVER:", NK_TEXT_LEFT);
+            if (publisher.running) {
+              nk_label_colored(ctx, "RUNNING", NK_TEXT_CENTERED, nk_rgb(0, 255, 0));
+            } else {
+              nk_label_colored(ctx, "STOPPED", NK_TEXT_CENTERED, nk_rgb(255, 0, 0));
+            }
+            nk_group_end(ctx);
           }
 
           /* Channel panes */
           static float values[Publisher::MAX_NUM_CHANNELS][Channel::MAX_NUM_VALUES];
-          static char texts[32][Publisher::MAX_NUM_CHANNELS];
-          static int text_lng[Publisher::MAX_NUM_CHANNELS];
           for (size_t i = 0; i < publisher.channels.size(); i++) {
             Channel &channel = publisher.channels[i];
 
@@ -178,8 +178,8 @@ int main(int argc, char** argv) {
             }
 
             nk_layout_row_dynamic(ctx, 25, 2);
-            nk_label(ctx, "Name: ", NK_TEXT_LEFT);
-            nk_edit_string(ctx, NK_EDIT_SIMPLE, texts[i], &text_lng[i], 32, nk_filter_default);
+            nk_label(ctx, "Name: ", NK_TEXT_RIGHT);
+            nk_label(ctx, channel.name.c_str(), NK_TEXT_LEFT);
 
             for (size_t j = 0; j < channel.values.size(); j++) {
               nk_layout_row_dynamic(ctx, 25, 2);
@@ -222,11 +222,17 @@ int main(int argc, char** argv) {
           nk_layout_row_dynamic(ctx, 30, 1);
           nk_label(ctx, "", NK_TEXT_LEFT);
 
+          nk_layout_row_dynamic(ctx, 25, 2);
+          nk_label(ctx, "Name:", NK_TEXT_RIGHT);
+          static char chan_name[64];
+          static int chan_name_lng = 0;
+          nk_edit_string(ctx, NK_EDIT_FIELD, chan_name, &chan_name_lng, 64, nk_filter_default);
           nk_layout_row_dynamic(ctx, 25, 1);
           /* Greyed out buttons during broadcasting */
           if (!publisher.running) {
             if (nk_button_label(ctx, "New channel")) {
-              publisher.add_channel(std::string());
+              publisher.add_channel(std::string(chan_name));
+              chan_name_lng = 0; // Reset string in edit field
             }
           } else {
             nk_style_button button = greyed_out_button(ctx);
