@@ -38,6 +38,21 @@ void sigint_handler(int signalId) {
     running = 0;
 }
 
+/** Changes the style of the nk_button into a greyed on, returns the old style */
+nk_style_button greyed_out_button(nk_context *ctx) {
+  struct nk_style_button button;
+  button = ctx->style.button;
+  ctx->style.button.normal = nk_style_item_color(nk_rgb(40,40,40));
+  ctx->style.button.hover = nk_style_item_color(nk_rgb(40,40,40));
+  ctx->style.button.active = nk_style_item_color(nk_rgb(40,40,40));
+  ctx->style.button.border_color = nk_rgb(60,60,60);
+  ctx->style.button.text_background = nk_rgb(60,60,60);
+  ctx->style.button.text_normal = nk_rgb(60,60,60);
+  ctx->style.button.text_hover = nk_rgb(60,60,60);
+  ctx->style.button.text_active = nk_rgb(60,60,60);
+  return button;
+}
+
 int main(int argc, char** argv) {
     /* Platform */
     SDL_Window* win;
@@ -81,16 +96,10 @@ int main(int argc, char** argv) {
     printf("Using interface %s\n", interface.c_str());
 
     Publisher publisher{interface};
-
+    /* Default channel and values */
     Channel* channel1 = publisher.add_channel("svpub1");
-
-    Value val1 = channel1->create_float_value();
-    Value val2 = channel1->create_float_value();
-
-    publisher.setup_complete();
-
-    float fVal1 = 1234.5678f;
-    float fVal2 = 0.1234f;
+    channel1->create_float_value();
+    channel1->create_float_value();
 
     while(running) {
       /* Input */
@@ -108,19 +117,27 @@ int main(int argc, char** argv) {
           nk_menubar_begin(ctx);
           nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
           nk_layout_row_push(ctx, 45);
-          if (nk_menu_begin_label(ctx, "PROPERTIES", NK_TEXT_LEFT, nk_vec2(120, 200))) {
+          if (nk_menu_begin_label(ctx, "CHANNELS", NK_TEXT_LEFT, nk_vec2(120, 200))) {
               nk_layout_row_dynamic(ctx, 30, 1);
-              nk_menu_item_label(ctx, "REMOVE ALL", NK_TEXT_LEFT);
-              nk_menu_item_label(ctx, "CLEAR ALL", NK_TEXT_LEFT);
+              if (nk_menu_item_label(ctx, "REMOVE ALL", NK_TEXT_LEFT)) {
+                publisher.channels.clear();
+              }
+              if (nk_menu_item_label(ctx, "CLEAR ALL", NK_TEXT_LEFT)) {
+                // TODO:
+              }
               nk_menu_end(ctx);
           }
           if (nk_menu_begin_label(ctx, "SERVER", NK_TEXT_LEFT, nk_vec2(120, 200))) {
               nk_layout_row_dynamic(ctx, 30, 1);
               if (nk_menu_item_label(ctx, "START", NK_TEXT_LEFT)) {
-                // server.start(interface);
+                if (!publisher.setup_completed) {
+                  publisher.complete_setup();
+                }
+                publisher.running = true;
               }
               if (nk_menu_item_label(ctx, "STOP", NK_TEXT_LEFT)) {
-                // server.stop();
+                /* FIXME: Resets complete state upon stopping the broadcast */
+                publisher = Publisher{interface};
               }
               nk_menu_end(ctx);
           }
@@ -129,25 +146,97 @@ int main(int argc, char** argv) {
 
           nk_layout_row_dynamic(ctx, 25, 2);
           nk_label(ctx, "SERVER:", NK_TEXT_LEFT);
-          nk_label(ctx, "RUNNING", NK_TEXT_CENTERED);
+          if (publisher.running) {
+            nk_label_colored(ctx, "RUNNING", NK_TEXT_CENTERED, nk_rgb(0, 255, 0));
+          } else {
+            nk_label_colored(ctx, "STOPPED", NK_TEXT_CENTERED, nk_rgb(255, 0, 0));
+          }
 
-          /* Property pane */
-          nk_layout_row_dynamic(ctx, 25, 2);
-          nk_label(ctx, "Property #1", NK_TEXT_LEFT);
-          nk_button_label(ctx, "Remove");
+          /* Channel panes */
+          static float values[Publisher::MAX_NUM_CHANNELS][Channel::MAX_NUM_VALUES];
+          static char texts[32][Publisher::MAX_NUM_CHANNELS];
+          static int text_lng[Publisher::MAX_NUM_CHANNELS];
+          for (size_t i = 0; i < publisher.channels.size(); i++) {
+            Channel &channel = publisher.channels[i];
 
-          nk_layout_row_dynamic(ctx, 25, 2);
-          nk_label(ctx, "Name: ", NK_TEXT_LEFT);
-          static char text[32];
-          static int text_len = 0;
-          nk_edit_string(ctx, NK_EDIT_SIMPLE, text, &text_len, sizeof(text), nk_filter_default);
+            std::string chan_name{"CHANNEL #" + std::to_string(i + 1)};
+            nk_layout_row_dynamic(ctx, 25, 2);
+            nk_label(ctx, chan_name.c_str(), NK_TEXT_LEFT);
+
+            /* Only able to remove the last value */
+            if (i == publisher.channels.size() - 1) {
+              /* Greyed out buttons during broadcasting */
+              if (!publisher.running) {
+                if (nk_button_label(ctx, "Remove channel")) {
+                  publisher.channels.pop_back();
+                  /* If we removed the last channel we are done here */
+                  if (publisher.channels.size() == 0) {
+                    continue;
+                  }
+                }
+              } else {
+                nk_style_button button = greyed_out_button(ctx);
+                nk_button_label(ctx, "Remove channel");
+                ctx->style.button = button;
+              }
+            }
+
+            nk_layout_row_dynamic(ctx, 25, 2);
+            nk_label(ctx, "Name: ", NK_TEXT_LEFT);
+            nk_edit_string(ctx, NK_EDIT_SIMPLE, texts[i], &text_lng[i], 32, nk_filter_default);
+
+            for (size_t j = 0; j < channel.values.size(); j++) {
+              nk_layout_row_dynamic(ctx, 25, 2);
+              /* FIXME: Only working with float values for now */
+              nk_property_float(ctx, "Value:", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
+              /* Only enable data to be set when setup is completed */
+              if (publisher.setup_completed) {
+                channel.set_value(channel.values[j], values[i][j]);
+              }
+              /* Only able to remove the last value */
+              if (j == channel.values.size() - 1) {
+                /* Greyed out buttons during broadcasting */
+                if (!publisher.running) {
+                  if (nk_button_label(ctx, "Remove value")) {
+                    channel.values.pop_back();
+                  }
+                } else {
+                  nk_style_button button = greyed_out_button(ctx);
+                  nk_button_label(ctx, "Remove value");
+                  ctx->style.button = button;
+                }
+              }
+            }
+
+            nk_layout_row_dynamic(ctx, 30, 2);
+            nk_label(ctx, "", NK_TEXT_LEFT);
+            /* Greyed out buttons during broadcasting */
+            if (!publisher.running) {
+              if (nk_button_label(ctx, "New value")) {
+                /* FIXME: Only working with float values for now */
+                channel.create_float_value();
+              }
+            } else {
+              nk_style_button button = greyed_out_button(ctx);
+              nk_button_label(ctx, "New value");
+              ctx->style.button = button;
+            }
+          }
+
+          nk_layout_row_dynamic(ctx, 30, 1);
+          nk_label(ctx, "", NK_TEXT_LEFT);
 
           nk_layout_row_dynamic(ctx, 25, 1);
-          static float value = 0.0f;
-          nk_property_float(ctx, "Value:", 0.0f, &value, 100.0f, 0.1f, 1.0f);
-
-          nk_layout_row_dynamic(ctx, 50, 1);
-          nk_button_label(ctx, "+");
+          /* Greyed out buttons during broadcasting */
+          if (!publisher.running) {
+            if (nk_button_label(ctx, "New channel")) {
+              publisher.add_channel(std::string());
+            }
+          } else {
+            nk_style_button button = greyed_out_button(ctx);
+            nk_button_label(ctx, "New channel");
+            ctx->style.button = button;
+          }
       }
       nk_end(ctx);
 
@@ -159,18 +248,10 @@ int main(int argc, char** argv) {
       glClear(GL_COLOR_BUFFER_BIT);
       glClearColor(bg[0], bg[1], bg[2], bg[3]);
       nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);}
-
       SDL_GL_SwapWindow(win);
 
       /* Sampled values server */
-      channel1->set_value(val1, fVal1);
-      channel1->set_value(val2, fVal2);
-
-      fVal1 += 1.1f;
-      fVal2 += 0.1f;
-
       publisher.broadcast();
-
       Thread_sleep(50);
     }
 cleanup:
