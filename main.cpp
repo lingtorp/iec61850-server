@@ -25,8 +25,8 @@
 
 #define APP_NAME "IEC61850-Server"
 
-#include <signal.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 #include "hal_thread.h"
 #include "publisher.hpp"
 
@@ -243,6 +243,7 @@ int main(int argc, char** argv) {
             if (nk_button_label(ctx, "New channel")) {
               publisher.add_channel(std::string(chan_name));
               chan_name_lng = 0; // Reset string in edit field
+              std::memset(chan_name, '\0', sizeof(chan_name));
             }
           } else {
             nk_style_button button = greyed_out_button(ctx);
