@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     int win_width, win_height;
 
     /* GUI */
-    struct nk_context *ctx;
+    struct nk_context* ctx;
 
     /* SDL setup */
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
@@ -89,22 +89,6 @@ int main(int argc, char** argv) {
 
     publisher.setup_complete();
 
-    /*
-    SampledValuesPublisher svPublisher = SampledValuesPublisher_create(NULL, interface);
-
-    SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
-
-    int float1 = SV_ASDU_addFLOAT(asdu1);
-    int float2 = SV_ASDU_addFLOAT(asdu1);
-
-    SV_ASDU asdu2 = SampledValuesPublisher_addASDU(svPublisher, "svpub2", NULL, 1);
-
-    int float3 = SV_ASDU_addFLOAT(asdu2);
-    int float4 = SV_ASDU_addFLOAT(asdu2);
-
-    SampledValuesPublisher_setupComplete(svPublisher);
-    */
-
     float fVal1 = 1234.5678f;
     float fVal2 = 0.1234f;
 
@@ -122,7 +106,7 @@ int main(int argc, char** argv) {
       if (nk_begin(ctx, APP_NAME, nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
           NK_WINDOW_BORDER|NK_WINDOW_TITLE)) {
           nk_menubar_begin(ctx);
-          nk_layout_row_begin(ctx, NK_STATIC, 25, 1);
+          nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
           nk_layout_row_push(ctx, 45);
           if (nk_menu_begin_label(ctx, "PROPERTIES", NK_TEXT_LEFT, nk_vec2(120, 200))) {
               nk_layout_row_dynamic(ctx, 30, 1);
@@ -130,8 +114,22 @@ int main(int argc, char** argv) {
               nk_menu_item_label(ctx, "CLEAR ALL", NK_TEXT_LEFT);
               nk_menu_end(ctx);
           }
+          if (nk_menu_begin_label(ctx, "SERVER", NK_TEXT_LEFT, nk_vec2(120, 200))) {
+              nk_layout_row_dynamic(ctx, 30, 1);
+              if (nk_menu_item_label(ctx, "START", NK_TEXT_LEFT)) {
+                // server.start(interface);
+              }
+              if (nk_menu_item_label(ctx, "STOP", NK_TEXT_LEFT)) {
+                // server.stop();
+              }
+              nk_menu_end(ctx);
+          }
           nk_layout_row_end(ctx);
           nk_menubar_end(ctx);
+
+          nk_layout_row_dynamic(ctx, 25, 2);
+          nk_label(ctx, "SERVER:", NK_TEXT_LEFT);
+          nk_label(ctx, "RUNNING", NK_TEXT_CENTERED);
 
           /* Property pane */
           nk_layout_row_dynamic(ctx, 25, 2);
@@ -160,28 +158,11 @@ int main(int argc, char** argv) {
       glViewport(0, 0, win_width, win_height);
       glClear(GL_COLOR_BUFFER_BIT);
       glClearColor(bg[0], bg[1], bg[2], bg[3]);
-      /* IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
-       * with blending, scissor, face culling, depth test and viewport and
-       * defaults everything back into a default state.
-       * Make sure to either a.) save and restore or b.) reset your own state after
-       * rendering the UI. */
       nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);}
 
       SDL_GL_SwapWindow(win);
 
       /* Sampled values server */
-      /*
-      SV_ASDU_setFLOAT(asdu1, float1, fVal1);
-      SV_ASDU_setFLOAT(asdu1, float2, fVal2);
-
-      SV_ASDU_increaseSmpCnt(asdu1);
-      SV_ASDU_increaseSmpCnt(asdu2);
-
-      fVal1 += 1.1f;
-      fVal2 += 0.1f;
-
-      SampledValuesPublisher_publish(svPublisher);
-      */
       channel1->set_value(val1, fVal1);
       channel1->set_value(val2, fVal2);
 
