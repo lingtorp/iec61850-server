@@ -1,9 +1,10 @@
 # Building
 ## Dependencies
-- OpenGL (should be included in a standard Linux distro)
+- libiec61850 (_included in the source_)
+- OpenGL (_should be included in a standard Linux distro_)
 - SDL2
 - GLEW
-- Nuklear (included in the source)
+- Nuklear (_included in the source_)
 
 *Install the dependencies*
 ```bash  
