@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
             nk_group_end(ctx);
           }
           /* Padding */
-          nk_layout_row_dynamic(ctx, 30, 2);
+          nk_layout_row_dynamic(ctx, 10, 2);
           nk_label(ctx, "", NK_TEXT_LEFT);
 
           /* Channel panes */
@@ -207,7 +207,11 @@ int main(int argc, char** argv) {
               }
             }
 
-            nk_layout_row_dynamic(ctx, 30, 2);
+            /* Padding */
+            nk_layout_row_dynamic(ctx, 5, 2);
+            nk_label(ctx, "", NK_TEXT_LEFT);
+
+            nk_layout_row_dynamic(ctx, 25, 2);
             nk_label(ctx, "", NK_TEXT_LEFT);
             /* Greyed out buttons during broadcasting */
             if (!publisher.running) {
@@ -220,6 +224,9 @@ int main(int argc, char** argv) {
               nk_button_label(ctx, "New value");
               ctx->style.button = button;
             }
+            /* Padding */
+            nk_layout_row_dynamic(ctx, 5, 2);
+            nk_label(ctx, "", NK_TEXT_LEFT);
           }
 
           nk_layout_row_dynamic(ctx, 30, 1);
