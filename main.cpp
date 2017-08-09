@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
 
     Publisher publisher{interface};
     /* Default channel and values */
-    Channel* channel1 = publisher.add_channel("longnamechanneltotesttheguiandotherstuffaswell");
+    Channel* channel1 = publisher.add_channel("svpub1");
     channel1->create_float_value();
     channel1->create_float_value();
 
@@ -111,16 +111,6 @@ int main(int argc, char** argv) {
           nk_menubar_begin(ctx);
           nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
           nk_layout_row_push(ctx, 45);
-          if (nk_menu_begin_label(ctx, "CHANNELS", NK_TEXT_LEFT, nk_vec2(120, 200))) {
-              nk_layout_row_dynamic(ctx, 30, 1);
-              if (nk_menu_item_label(ctx, "REMOVE ALL", NK_TEXT_LEFT)) {
-                publisher.channels.clear();
-              }
-              if (nk_menu_item_label(ctx, "CLEAR ALL", NK_TEXT_LEFT)) {
-                // TODO:
-              }
-              nk_menu_end(ctx);
-          }
           if (nk_menu_begin_label(ctx, "SERVER", NK_TEXT_LEFT, nk_vec2(120, 200))) {
               nk_layout_row_dynamic(ctx, 30, 1);
               if (nk_menu_item_label(ctx, "START", NK_TEXT_LEFT)) {
@@ -191,6 +181,7 @@ int main(int argc, char** argv) {
               /* Only enable data to be set when setup is completed */
               if (publisher.setup_completed) {
                 channel.set_value(channel.values[j], values[i][j]);
+                // channel.values[i] += 1;
               }
               /* Only able to remove the last value */
               if (j == channel.values.size() - 1) {

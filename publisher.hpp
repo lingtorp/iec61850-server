@@ -15,6 +15,9 @@ class Publisher;
 /** All of the types a Value in a channel can have */
 enum ValueType { INT, FLOAT };
 
+/**  */
+enum ValueConfig { MANUAL, SIN };
+
 /**
  * Value
  * - Represents a variable inside a Channel in the API of libiec61850.
@@ -22,6 +25,7 @@ enum ValueType { INT, FLOAT };
 struct Value {
   int id;
   ValueType type;
+  ValueConfig config;
 };
 
 /**
