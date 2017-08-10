@@ -16,9 +16,14 @@
 $ sudo apt-get install libsdl2-dev libglew-dev
 ```
 then change in to the directory of the repository and ...
+*Run*
 ```bash  
-$ make && sudo ./main
+$ make && sudo ./main <network-interface-name>
 ```
+The first and only command line argument is the network interface name which
+is typically something along the lines of 'eth0' on Linux. It defaults to 'eth0'
+on all platforms.
+
 The program needs to be run as sudo due to the low-level network access required
 by libiec61850.
 
