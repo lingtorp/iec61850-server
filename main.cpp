@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
     if (argc == 2) {
       interface = std::string(argv[1]);
     } else {
-      interface = "ens33"; // Default network interface name
+      interface = "eth0"; // Default network interface name
     }
     std::cout << "Network interface: " << interface << std::endl;
 
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
           nk_layout_row_end(ctx);
           nk_menubar_end(ctx);
 
-          nk_layout_row_dynamic(ctx, 70, 1);
+          nk_layout_row_dynamic(ctx, 35 * 3, 1);
           if(nk_group_begin(ctx, "", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
             nk_layout_row_dynamic(ctx, 25, 2);
             nk_label(ctx, "SERVER:", NK_TEXT_RIGHT);
@@ -149,6 +149,9 @@ int main(int argc, char** argv) {
             } else {
               nk_label_colored(ctx, "STOPPED", NK_TEXT_CENTERED, nk_rgb(255, 0, 0));
             }
+            nk_layout_row_dynamic(ctx, 25, 2);
+            nk_label(ctx, "NETWORK INTERFACE:", NK_TEXT_RIGHT);
+            nk_label(ctx, interface.c_str(), NK_TEXT_CENTERED);
             nk_layout_row_dynamic(ctx, 25, 1);
             nk_property_int(ctx, "Sample rate (hz)", 1, &sample_rate, 1000, 1, 1);
             nk_group_end(ctx);
