@@ -1,5 +1,10 @@
-# Building
-## Dependencies
+# IEC61850-Server
+
+## How to use
+
+
+## Building
+### Dependencies
 - libiec61850 (_included in the source_)
 - OpenGL (_should be included in a standard Linux distro_)
 - SDL2
