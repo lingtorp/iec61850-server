@@ -19,7 +19,7 @@ void sigint_handler(int signalId) {
 int main(int argc, char** argv) {
     char* interface;
 
-    interface = "5";
+    interface = "ens33";
 
     printf("Using interface %s\n", interface);
 

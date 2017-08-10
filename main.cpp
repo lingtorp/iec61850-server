@@ -30,10 +30,6 @@
 #include "hal_thread.h"
 #include "publisher.hpp"
 
-#ifdef __LINUX__
-#include <ifaddrs.h>
-#endif
-
 /** Main loop variable */
 static bool running = true;
 /** Global variable simulating a sinus wave */
@@ -94,69 +90,16 @@ int main(int argc, char** argv) {
     nk_sdl_font_stash_begin(&atlas);
     nk_sdl_font_stash_end();
 
-    /** Find all the network interface names (platform specific) */
-    std::vector<std::string> network_interfaces;
-    #ifdef __LINUX__
-      struct ifaddrs* addrs, *tmp;
-
-      getifaddrs(&addrs);
-      tmp = addrs;
-
-      while(tmp) {
-          if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_PACKET) {
-              network_interfaces.push_back(std::string(tmp->ifa_name));
-          }
-          tmp = tmp->ifa_next;
-      }
-
-      freeifaddrs(addrs);
-    #endif
-
     /* Selected network interface name */
-    std::string sel_net_interface;
-    bool selection_done = false;
-    while(!selection_done) {
-        if (nk_begin(ctx, APP_NAME, nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
-          NK_WINDOW_BORDER|NK_WINDOW_TITLE)) {
-        /* Input */
-        SDL_Event evt;
-        nk_input_begin(ctx);
-        while (SDL_PollEvent(&evt)) {
-            if (evt.type == SDL_QUIT) return 0;
-            nk_sdl_handle_event(&evt);
-        }
-        nk_input_end(ctx);
-        nk_layout_row_dynamic(ctx, 20, 1);
-        nk_label(ctx, "Please select the correct network interface.", NK_TEXT_CENTERED);
-        /* Network interface selection */
-        static struct nk_rect s = {0, 50, WINDOW_WIDTH - 50, WINDOW_HEIGHT - 50};
-        if (nk_popup_begin(ctx, NK_POPUP_DYNAMIC, "Select network interface",
-          NK_WINDOW_CLOSABLE, s)) {
-            nk_layout_row_dynamic(ctx, 20, 1);
-            for (auto &network_interface_name : network_interfaces) {
-              if (nk_button_label(ctx, network_interface_name.c_str())) {
-                sel_net_interface = network_interface_name;
-                selection_done = true;
-                std::cout << "Selected: " << network_interface_name << std::endl;
-              }
-            }
-            nk_popup_end(ctx);
-        }
-        nk_end(ctx);
-
-        /* Draw */
-        {float bg[4];
-        nk_color_fv(bg, background);
-        SDL_GetWindowSize(win, &win_width, &win_height);
-        glViewport(0, 0, win_width, win_height);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(bg[0], bg[1], bg[2], bg[3]);
-        nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);}
-        SDL_GL_SwapWindow(win);
-      }
+    std::string interface;
+    if (argc == 2) {
+      interface = std::string(argv[1]);
+    } else {
+      interface = "ens33"; // Default network interface name
     }
+    std::cout << "Network interface: " << interface << std::endl;
 
-    Publisher publisher{sel_net_interface};
+    Publisher publisher{interface};
     /** Default channel and values */
     Channel* channel1 = publisher.add_channel("svpub1");
     channel1->create_float_value();
@@ -190,7 +133,7 @@ int main(int argc, char** argv) {
               }
               if (nk_menu_item_label(ctx, "STOP", NK_TEXT_LEFT)) {
                 /* FIXME: Resets complete state upon stopping the broadcast */
-                publisher = Publisher{sel_net_interface};
+                publisher = Publisher{interface};
               }
               nk_menu_end(ctx);
           }
