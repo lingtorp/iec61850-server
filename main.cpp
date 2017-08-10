@@ -49,14 +49,14 @@ static float amplitude = 1.0f; // FIXME: With more work all of the Values can ge
 nk_style_button greyed_out_button(nk_context *ctx) {
   struct nk_style_button button;
   button = ctx->style.button;
-  ctx->style.button.normal = nk_style_item_color(nk_rgb(40,40,40));
-  ctx->style.button.hover = nk_style_item_color(nk_rgb(40,40,40));
-  ctx->style.button.active = nk_style_item_color(nk_rgb(40,40,40));
-  ctx->style.button.border_color = nk_rgb(60,60,60);
-  ctx->style.button.text_background = nk_rgb(60,60,60);
-  ctx->style.button.text_normal = nk_rgb(60,60,60);
-  ctx->style.button.text_hover = nk_rgb(60,60,60);
-  ctx->style.button.text_active = nk_rgb(60,60,60);
+  ctx->style.button.normal = nk_style_item_color(nk_rgb(40, 40, 40));
+  ctx->style.button.hover  = nk_style_item_color(nk_rgb(40, 40, 40));
+  ctx->style.button.active = nk_style_item_color(nk_rgb(40, 40, 40));
+  ctx->style.button.border_color    = nk_rgb(60, 60, 60);
+  ctx->style.button.text_background = nk_rgb(60, 60, 60);
+  ctx->style.button.text_normal     = nk_rgb(60, 60, 60);
+  ctx->style.button.text_hover      = nk_rgb(60, 60, 60);
+  ctx->style.button.text_active     = nk_rgb(60, 60, 60);
   return button;
 }
 
