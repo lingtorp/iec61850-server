@@ -30,6 +30,10 @@
 #include "hal_thread.h"
 #include "publisher.hpp"
 
+#ifdef __LINUX__
+#include <ifaddrs.h>
+#endif
+
 /** Main loop variable */
 static bool running = true;
 /** Global variable simulating a sinus wave */
@@ -50,6 +54,31 @@ nk_style_button greyed_out_button(nk_context *ctx) {
   ctx->style.button.text_hover = nk_rgb(60,60,60);
   ctx->style.button.text_active = nk_rgb(60,60,60);
   return button;
+}
+
+/** Find all the network interface names (platform specifics) */
+std::vector<std::string> find_network_interface_names() {
+  std::vector<std::string> network_interfaces;
+#ifdef __LINUX__
+  struct ifaddrs* addrs, *tmp;
+
+  getifaddrs(&addrs);
+  tmp = addrs;
+
+  while(tmp) {
+      if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_PACKET) {
+          network_interfaces.push_back(std::string(tmp->ifa_name));
+      }
+      tmp = tmp->ifa_next;
+  }
+
+  freeifaddrs(addrs);
+#elif
+  // FIXME: Windows and other platforms are unsupported 
+  exit(1);
+#endif
+
+  return network_interfaces;
 }
 
 int main(int argc, char** argv) {
@@ -125,17 +154,28 @@ int main(int argc, char** argv) {
           nk_layout_row_push(ctx, 45);
           if (nk_menu_begin_label(ctx, "SERVER", NK_TEXT_LEFT, nk_vec2(120, 200))) {
               nk_layout_row_dynamic(ctx, 30, 1);
-              if (nk_menu_item_label(ctx, "START", NK_TEXT_LEFT)) {
+              if (nk_menu_item_label(ctx, "START", NK_TEXT_CENTERED)) {
                 if (!publisher.setup_completed) {
                   publisher.complete_setup();
                 }
                 publisher.running = true;
               }
-              if (nk_menu_item_label(ctx, "STOP", NK_TEXT_LEFT)) {
+              if (nk_menu_item_label(ctx, "STOP", NK_TEXT_CENTERED)) {
                 /* FIXME: Resets complete state upon stopping the broadcast */
                 publisher = Publisher{interface};
               }
               nk_menu_end(ctx);
+          }
+          if (nk_menu_begin_label(ctx, "NETWORK", NK_TEXT_LEFT, nk_vec2(120, 200))) {
+            nk_layout_row_dynamic(ctx, 30, 1);
+            for (auto &network_name : find_network_interface_names()) {
+              if (nk_menu_item_label(ctx, network_name.c_str(), NK_TEXT_CENTERED)) {
+                /* FIXME: Resets complete state upon stopping the broadcast */
+                interface = network_name;
+                publisher = Publisher{interface};
+              }
+            }
+            nk_menu_end(ctx);
           }
           nk_layout_row_end(ctx);
           nk_menubar_end(ctx);
