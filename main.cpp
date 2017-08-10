@@ -39,11 +39,11 @@ static bool running = true;
 /** Global variable simulating a sinus wave */
 static float sinus_value = 0.0f;
 /** Number of milliseconds between each broadcast */
-static int sample_rate = 20;
+static int sample_rate = 20.0f;
 /** Global frequency for all sinus wave Values */
-static int hertz = 1; // FIXME: With more work all of the Values can get individual frequencies
+static int hertz = 50; // FIXME: With more work all of the Values can get individual frequencies
 /** Global amplitude for all sinus wave Values */
-static float amplitude = 1; // FIXME: With more work all of the Values can get individual amplitude
+static float amplitude = 1.0f; // FIXME: With more work all of the Values can get individual amplitude
 
 /** Changes the style of the nk_button into a greyed on, returns the old style */
 nk_style_button greyed_out_button(nk_context *ctx) {
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
           NK_WINDOW_BORDER|NK_WINDOW_TITLE)) {
           nk_menubar_begin(ctx);
           nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
-          nk_layout_row_push(ctx, 45);
+          nk_layout_row_push(ctx, 60);
           if (nk_menu_begin_label(ctx, "SERVER", NK_TEXT_LEFT, nk_vec2(120, 200))) {
               nk_layout_row_dynamic(ctx, 30, 1);
               if (nk_menu_item_label(ctx, "START", NK_TEXT_CENTERED)) {
@@ -246,8 +246,15 @@ int main(int argc, char** argv) {
 
             for (size_t j = 0; j < channel.values.size(); j++) {
               nk_layout_row_dynamic(ctx, 25, 2);
-              /* FIXME: Only working with float values for now */
-              nk_property_float(ctx, "Value:", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
+              switch (channel.values[j].config) {
+                case ValueConfig::MANUAL:
+                  /* FIXME: Only working with float values for now */
+                  nk_property_float(ctx, "Value:", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
+                  break;
+                case ValueConfig::SINUS:
+                  nk_property_float(ctx, "Amplitude:", 0.0f, &amplitude, 100'000.0f, 0.1f, 1.0f);
+                  break;
+              }
               /* Only enable data to be set when setup is completed */
               if (publisher.setup_completed) {
                 switch (channel.values[j].config) {
