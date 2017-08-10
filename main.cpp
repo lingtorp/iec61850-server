@@ -44,6 +44,8 @@ static int sample_rate = 80;
 static int hertz = 50; // FIXME: With more work all of the Values can get individual frequencies
 /** Global amplitude for all sinus wave Values */
 static float amplitude = 1.0f; // FIXME: With more work all of the Values can get individual amplitude
+/** Displacement/offset of the mid-point of the sinus wave */
+static float displacement_y = 0.0f;
 
 /** Changes the style of the nk_button into a greyed on, returns the old style */
 nk_style_button greyed_out_button(nk_context *ctx) {
@@ -186,7 +188,7 @@ int main(int argc, char** argv) {
           nk_layout_row_end(ctx);
           nk_menubar_end(ctx);
 
-          nk_layout_row_dynamic(ctx, 35 * 3, 1);
+          nk_layout_row_dynamic(ctx, 35 * 4, 1);
           if(nk_group_begin(ctx, "", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
             nk_layout_row_dynamic(ctx, 25, 2);
             nk_label(ctx, "SERVER:", NK_TEXT_RIGHT);
@@ -200,6 +202,8 @@ int main(int argc, char** argv) {
             nk_label(ctx, interface.c_str(), NK_TEXT_CENTERED);
             nk_layout_row_dynamic(ctx, 25, 1);
             nk_property_int(ctx, "Sample rate (samples/period)", 1, &sample_rate, 100'000, 1, 1);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_property_float(ctx, "Horizontal displacement (y-axis)", -1'000.0f, &displacement_y, 1'000.0f, 0.1, 1);
             nk_group_end(ctx);
           }
 
@@ -251,10 +255,10 @@ int main(int argc, char** argv) {
               switch (channel.values[j].config) {
                 case ValueConfig::MANUAL:
                   /* FIXME: Only working with float values for now */
-                  nk_property_float(ctx, "Value:", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
+                  nk_property_float(ctx, "Value", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
                   break;
                 case ValueConfig::SINUS:
-                  nk_property_float(ctx, "Amplitude:", 0.0f, &amplitude, 100'000.0f, 0.1f, 1.0f);
+                  nk_property_float(ctx, "Amplitude", 0.0f, &amplitude, 100'000.0f, 0.1f, 1.0f);
                   break;
               }
               /* Only enable data to be set when setup is completed */
@@ -366,13 +370,13 @@ int main(int argc, char** argv) {
       float bt = dt/float(sample_rate);
 
       /* Simulate sinus wave */
-      sinus_value = amplitude * std::sin(dt * loops);
+      sinus_value = amplitude * std::sin((dt * loops) * (180/M_PI)) + displacement_y;
       loops++;
       // std::cout << sinus_value << " / " << amplitude << " / " << dt << " / " << loops << std::endl;
 
       /* Sampled values server */
       publisher.broadcast();
-      Thread_sleep(bt);
+      Thread_sleep(bt * 1000);
     }
 cleanup:
     return 0;
