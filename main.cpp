@@ -42,6 +42,8 @@ static float sinus_value = 0.0f;
 static int sample_rate = 20;
 /** Global frequency for all sinus wave Values */
 static int hertz = 1; // FIXME: With more work all of the Values can get individual frequencies
+/** Global amplitude for all sinus wave Values */
+static float amplitude = 1; // FIXME: With more work all of the Values can get individual amplitude
 
 /** Changes the style of the nk_button into a greyed on, returns the old style */
 nk_style_button greyed_out_button(nk_context *ctx) {
@@ -340,7 +342,7 @@ int main(int argc, char** argv) {
       SDL_GL_SwapWindow(win);
 
       /* Simulate sinus wave */
-      sinus_value = std::sin(0.01f * loops);
+      sinus_value = amplitude * std::sin((1/sample_rate) * loops * hertz);
       loops++;
 
       /* Sampled values server */
