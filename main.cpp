@@ -40,6 +40,8 @@ static bool running = true;
 static float sinus_value = 0.0f;
 /** Number of milliseconds between each broadcast */
 static int sample_rate = 20;
+/** Global frequency for all sinus wave Values */
+static int hertz = 1; // FIXME: With more work all of the Values can get individual frequencies
 
 /** Changes the style of the nk_button into a greyed on, returns the old style */
 nk_style_button greyed_out_button(nk_context *ctx) {
@@ -74,7 +76,7 @@ std::vector<std::string> find_network_interface_names() {
 
   freeifaddrs(addrs);
 #elif
-  // FIXME: Windows and other platforms are unsupported 
+  // FIXME: Windows and other platforms are unsupported
   exit(1);
 #endif
 
@@ -193,7 +195,7 @@ int main(int argc, char** argv) {
             nk_label(ctx, "NETWORK INTERFACE:", NK_TEXT_RIGHT);
             nk_label(ctx, interface.c_str(), NK_TEXT_CENTERED);
             nk_layout_row_dynamic(ctx, 25, 1);
-            nk_property_int(ctx, "Sample rate (hz)", 1, &sample_rate, 1000, 1, 1);
+            nk_property_int(ctx, "Broadcast rate (samples/s)", 1, &sample_rate, 100'000, 1, 1);
             nk_group_end(ctx);
           }
 
@@ -264,6 +266,10 @@ int main(int argc, char** argv) {
                   channel.values[j].config = ValueConfig::MANUAL;
                 }
                 nk_group_end(ctx);
+              }
+              if (channel.values[j].config == SINUS) {
+                nk_layout_row_dynamic(ctx, 25, 1);
+                nk_property_int(ctx, "Frequency (hz)", 1.0f, &hertz, 1000, 1, 1.0f);
               }
             }
 
@@ -339,7 +345,7 @@ int main(int argc, char** argv) {
 
       /* Sampled values server */
       publisher.broadcast();
-      Thread_sleep(std::round(1000/sample_rate));
+      Thread_sleep(std::round(1/sample_rate));
     }
 cleanup:
     return 0;
