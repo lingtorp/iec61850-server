@@ -97,6 +97,11 @@ public:
     running(false),
     setup_completed(false) {}
 
+  ~Publisher() {
+    /** Cleanup libiec61850 */
+    SampledValuesPublisher_destroy(_publisher);
+  }
+
   /** Appends a new Channel to the publishers list of channels */
   Channel* add_channel(std::string name) {
     if (channels.size() <= MAX_NUM_CHANNELS) {
