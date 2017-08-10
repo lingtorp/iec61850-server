@@ -38,8 +38,8 @@
 static bool running = true;
 /** Global variable simulating a sinus wave */
 static float sinus_value = 0.0f;
-/** Number of milliseconds between each broadcast */
-static int sample_rate = 20.0f;
+/** Samples evenly taken over on period */
+static int sample_rate = 80;
 /** Global frequency for all sinus wave Values */
 static int hertz = 50; // FIXME: With more work all of the Values can get individual frequencies
 /** Global amplitude for all sinus wave Values */
@@ -140,6 +140,8 @@ int main(int argc, char** argv) {
 
     /** Number of loops performed by the mainloop */
     static uint64_t loops = 0;
+    static int old_sample_rate = sample_rate;
+    static int old_hertz = hertz;
     while(running) {
       /* Input */
       SDL_Event evt;
@@ -197,7 +199,7 @@ int main(int argc, char** argv) {
             nk_label(ctx, "NETWORK INTERFACE:", NK_TEXT_RIGHT);
             nk_label(ctx, interface.c_str(), NK_TEXT_CENTERED);
             nk_layout_row_dynamic(ctx, 25, 1);
-            nk_property_int(ctx, "Broadcast rate (samples/s)", 1, &sample_rate, 100'000, 1, 1);
+            nk_property_int(ctx, "Sample rate (samples/period)", 1, &sample_rate, 100'000, 1, 1);
             nk_group_end(ctx);
           }
 
@@ -348,13 +350,29 @@ int main(int argc, char** argv) {
       nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);}
       SDL_GL_SwapWindow(win);
 
+      /* Detect changed values, reset time calculations */
+      if (old_sample_rate != sample_rate) {
+        loops = 0;
+        old_sample_rate = sample_rate;
+      }
+      if (old_hertz != hertz) {
+        loops = 0;
+        old_hertz = hertz;
+      }
+
+      /** Period time delta */
+      float dt = 1/float(hertz);
+      /** Broadcast time delta */
+      float bt = dt/float(sample_rate);
+
       /* Simulate sinus wave */
-      sinus_value = amplitude * std::sin((1/sample_rate) * loops * hertz);
+      sinus_value = amplitude * std::sin(dt * loops);
       loops++;
+      // std::cout << sinus_value << " / " << amplitude << " / " << dt << " / " << loops << std::endl;
 
       /* Sampled values server */
       publisher.broadcast();
-      Thread_sleep(std::round(1/sample_rate));
+      Thread_sleep(bt);
     }
 cleanup:
     return 0;
