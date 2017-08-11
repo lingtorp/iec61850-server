@@ -53,5 +53,6 @@ All of the components of this program is portable but there is work to be done.
 #### Problems to address
 - Network interface names are fetched only on Linux
 - Nuklear needs a different backend (see Nuklear documentation or their demos)
+- Investigate if it is worth using libiec61850 without threads.
 
 Tested on Ubuntu 17.04.
