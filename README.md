@@ -27,4 +27,7 @@ on all platforms.
 The program needs to be run as sudo due to the low-level network access required
 by libiec61850.
 
+### Performance concerns
+Given that the number of samples sent over the network quite easily can move into the thousands per seconds (50 hz * 256 samples/s = 12800 values/s) the performance of the program needs to be investigated. The normal build is unoptimized (add '-O3' to CXXFLAGS variable (line ~15) in the makefile for optimized builds).
+
 Tested on Ubuntu 17.04.
