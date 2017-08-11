@@ -91,7 +91,6 @@ std::vector<std::string> find_network_interface_names() {
 int main(int argc, char** argv) {
     /* Platform */
     SDL_Window* win;
-    struct nk_color background;
     int win_width, win_height;
 
     /* GUI */
