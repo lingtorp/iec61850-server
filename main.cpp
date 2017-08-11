@@ -324,7 +324,7 @@ int main(int argc, char** argv) {
           nk_label(ctx, "", NK_TEXT_LEFT);
 
           nk_layout_row_dynamic(ctx, 25, 2);
-          nk_label(ctx, "Name:", NK_TEXT_RIGHT);
+          nk_label(ctx, "New channel name:", NK_TEXT_RIGHT);
           static char chan_name[64];
           static int chan_name_lng = 0;
           nk_edit_string(ctx, NK_EDIT_FIELD, chan_name, &chan_name_lng, 64, nk_filter_default);
