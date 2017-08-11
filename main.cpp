@@ -28,6 +28,7 @@
 #include <cstdio>
 #include <cstring>
 #include "hal_thread.h"
+#include "hal_time.h"
 #include "publisher.hpp"
 
 #ifdef __LINUX__
@@ -364,7 +365,7 @@ int main(int argc, char** argv) {
       float bt = dt/float(sample_rate);
 
       /* Simulate sinus wave */
-      sinus_value = amplitude * std::sin((dt * loops) * (180/M_PI)) + displacement_y;
+      sinus_value = amplitude * std::sin((bt * loops) * (180.0f/M_PI)) + displacement_y;
       loops++;
       // std::cout << sinus_value << " / " << amplitude << " / " << dt << " / " << loops << std::endl;
 
