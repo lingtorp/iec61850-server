@@ -28,7 +28,6 @@
 #include <cstdio>
 #include <cstring>
 #include "hal_thread.h"
-#include "hal_time.h"
 #include "publisher.hpp"
 
 #ifdef __LINUX__
@@ -358,7 +357,7 @@ int main(int argc, char** argv) {
         old_hertz = hertz;
       }
 
-      /** Period time delta */
+      /** Period time delta (seconds) */
       float dt = 1/float(hertz);
       /** Broadcast time delta */
       float bt = dt/float(sample_rate);
