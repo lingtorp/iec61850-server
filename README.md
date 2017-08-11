@@ -1,5 +1,8 @@
 # IEC61850-Server
 
+![User interface #1](images/running-server.png)
+![User interface #2](images/stopped-server.png)
+
 ## How to use
 
 
