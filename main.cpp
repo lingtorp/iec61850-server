@@ -345,13 +345,7 @@ int main(int argc, char** argv) {
       nk_end(ctx);
 
       /* Draw */
-      {float bg[4];
-      nk_color_fv(bg, background);
-      SDL_GetWindowSize(win, &win_width, &win_height);
-      glViewport(0, 0, win_width, win_height);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glClearColor(bg[0], bg[1], bg[2], bg[3]);
-      nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);}
+      nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
       SDL_GL_SwapWindow(win);
 
       /* Detect changed values, reset time calculations */
