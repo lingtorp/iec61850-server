@@ -362,7 +362,6 @@ int main(int argc, char** argv) {
       /* Simulate sine wave */
       sine_value = amplitude * std::sin((bt * loops) * (180.0f/M_PI)) + displacement_y;
       loops++;
-      // std::cout << sine_value << " / " << amplitude << " / " << dt << " / " << loops << std::endl;
 
       /* Sampled values server */
       publisher.broadcast();
