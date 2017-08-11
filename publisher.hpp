@@ -44,8 +44,8 @@ public:
 
   Channel(SampledValuesPublisher publisher, std::string name):
     name(name),
-    _asdu(SampledValuesPublisher_addASDU(publisher, (char *) name.c_str(), NULL, 1)),
-    values{} {}
+    values{},
+    _asdu(SampledValuesPublisher_addASDU(publisher, (char *) name.c_str(), NULL, 1)) {}
 
   /** Creates a Value (more like a variable) in the channel */
   Value create_float_value() {
@@ -93,9 +93,9 @@ public:
   Publisher(std::string interface):
     interface(interface),
     channels{},
-    _publisher(SampledValuesPublisher_create(NULL, interface.c_str())),
     running(false),
-    setup_completed(false) {}
+    setup_completed(false),
+    _publisher(SampledValuesPublisher_create(NULL, interface.c_str())) {}
 
   ~Publisher() {
     /** Cleanup libiec61850 */
