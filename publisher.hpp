@@ -16,9 +16,9 @@ class Publisher;
 enum ValueType { INT, FLOAT };
 
 /** Dictactes what type of value manipulation is done on the value */
-/** SINUS = system simulates a sinus wave [-1.0f, 1.0f] */
+/** sine = system simulates a sine wave [-1.0f, 1.0f] */
 /** MANUAL = system allows user to send whatever the is inputted in the GUI */
-enum ValueConfig { MANUAL, SINUS };
+enum ValueConfig { MANUAL, sine };
 
 /**
  * Value

@@ -37,15 +37,15 @@
 
 /** Main loop variable */
 static bool running = true;
-/** Global variable simulating a sinus wave */
-static float sinus_value = 0.0f;
+/** Global variable simulating a sine wave */
+static float sine_value = 0.0f;
 /** Samples evenly taken over on period */
 static int sample_rate = 80;
-/** Global frequency for all sinus wave Values */
+/** Global frequency for all sine wave Values */
 static int hertz = 50; // FIXME: With more work all of the Values can get individual frequencies
-/** Global amplitude for all sinus wave Values */
+/** Global amplitude for all sine wave Values */
 static float amplitude = 1.0f; // FIXME: With more work all of the Values can get individual amplitude
-/** Displacement/offset of the mid-point of the sinus wave */
+/** Displacement/offset of the mid-point of the sine wave */
 static float displacement_y = 0.0f;
 
 /** Changes the style of the nk_button into a greyed on, returns the old style */
@@ -258,7 +258,7 @@ int main(int argc, char** argv) {
                   /* FIXME: Only working with float values for now */
                   nk_property_float(ctx, "Value", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
                   break;
-                case ValueConfig::SINUS:
+                case ValueConfig::sine:
                   nk_property_float(ctx, "Amplitude", 0.0f, &amplitude, 100'000.0f, 0.1f, 1.0f);
                   break;
               }
@@ -268,22 +268,22 @@ int main(int argc, char** argv) {
                   case ValueConfig::MANUAL:
                     channel.set_value(channel.values[j], values[i][j]);
                     break;
-                  case ValueConfig::SINUS:
-                    channel.set_value(channel.values[j], sinus_value);
+                  case ValueConfig::sine:
+                    channel.set_value(channel.values[j], sine_value);
                     break;
                 }
               }
               if(nk_group_begin(ctx, "", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
                 nk_layout_row_dynamic(ctx, 25, 2);
-                if (nk_option_label(ctx, "SINUS", channel.values[j].config == SINUS)) {
-                  channel.values[j].config = ValueConfig::SINUS;
+                if (nk_option_label(ctx, "SINE", channel.values[j].config == sine)) {
+                  channel.values[j].config = ValueConfig::sine;
                 }
                 if (nk_option_label(ctx, "MANUAL", channel.values[j].config == MANUAL)) {
                   channel.values[j].config = ValueConfig::MANUAL;
                 }
                 nk_group_end(ctx);
               }
-              if (channel.values[j].config == SINUS) {
+              if (channel.values[j].config == sine) {
                 nk_layout_row_dynamic(ctx, 25, 1);
                 nk_property_int(ctx, "Frequency (hz)", 1.0f, &hertz, 1000, 1, 1.0f);
               }
@@ -364,10 +364,10 @@ int main(int argc, char** argv) {
       /** Broadcast time delta */
       float bt = dt/float(sample_rate);
 
-      /* Simulate sinus wave */
-      sinus_value = amplitude * std::sin((bt * loops) * (180.0f/M_PI)) + displacement_y;
+      /* Simulate sine wave */
+      sine_value = amplitude * std::sin((bt * loops) * (180.0f/M_PI)) + displacement_y;
       loops++;
-      // std::cout << sinus_value << " / " << amplitude << " / " << dt << " / " << loops << std::endl;
+      // std::cout << sine_value << " / " << amplitude << " / " << dt << " / " << loops << std::endl;
 
       /* Sampled values server */
       publisher.broadcast();
