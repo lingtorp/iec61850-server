@@ -292,8 +292,12 @@ int main(int argc, char** argv) {
             /* Only able to remove the last value */
             /* Greyed out buttons during broadcasting */
             if (!publisher.running) {
-              if (nk_button_label(ctx, "Remove value")) {
-                channel.values.pop_back();
+              if (channel.values.size() > 0) {
+                if (nk_button_label(ctx, "Remove value")) {
+                  channel.values.pop_back();
+                }
+              } else {
+                nk_label(ctx, "", NK_TEXT_RIGHT);
               }
             } else {
               nk_style_button button = greyed_out_button(ctx);
