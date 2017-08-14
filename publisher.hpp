@@ -42,10 +42,15 @@ public:
   /** Name of the channel (visible to the clients) */
   std::string name;
 
-  Channel(SampledValuesPublisher publisher, std::string name):
-    name(name),
-    values{},
-    _asdu(SampledValuesPublisher_addASDU(publisher, (char *) name.c_str(), NULL, 1)) {}
+  Channel() = delete;
+
+  Channel(SampledValuesPublisher publisher, std::string a_name):
+    name{a_name},
+    values{} {
+    str = new char[name.size() + 1]; // + 1 for null terminator
+    std::memcpy(str, name.c_str(), name.size() + 1);
+    _asdu = SampledValuesPublisher_addASDU(publisher, str, NULL, 1);
+  }
 
   /** Creates a Value (more like a variable) in the channel */
   Value create_float_value() {
@@ -71,6 +76,7 @@ public:
 private:
   /** libiec61850 */
   SV_ASDU _asdu;
+  char* str; // libiec61850 owns this pointer (libiec61850 will dealloc it)
 };
 
 /**
@@ -90,6 +96,8 @@ public:
   bool running;
   bool setup_completed;
 
+  Publisher() = delete;
+
   Publisher(std::string interface):
     interface(interface),
     channels{},
@@ -105,8 +113,7 @@ public:
   /** Appends a new Channel to the publishers list of channels */
   Channel* add_channel(std::string name) {
     if (channels.size() <= MAX_NUM_CHANNELS) {
-      Channel channel{_publisher, name};
-      channels.push_back(channel);
+      channels.emplace_back(Channel{_publisher, name});
     }
     return &channels.back();
   }
