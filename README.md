@@ -57,5 +57,7 @@ All of the components of this program is portable but there is work to be done.
 - Network interface names are fetched only on Linux
 - Nuklear needs a different backend (see Nuklear documentation or their demos)
 - Investigate if it is worth using libiec61850 without threads.
+- Stopping and starting the server seems to slowly corrupting some memory and
+thus will crash after a couple of iterations.
 
 Tested on Ubuntu 17.04.
