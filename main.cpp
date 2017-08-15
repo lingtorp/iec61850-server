@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     if (argc == 2) {
       interface = std::string(argv[1]);
     } else {
-      interface = "eth0"; // Default network interface name
+      interface = "lo"; // Default network interface name (lo = loopback = localhost)
     }
     std::cout << "Network interface: " << interface << std::endl;
 
