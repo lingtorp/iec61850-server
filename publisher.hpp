@@ -120,7 +120,7 @@ public:
 
   /** Sends the Channels values over the network */
   void broadcast() {
-    if (!running) { return; }
+    if (!running || !setup_completed) { return; }
     for (auto &channel : channels) {
       channel.increment_sample_count();
     }
