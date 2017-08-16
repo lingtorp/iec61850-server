@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
                   /* FIXME: Only working with float values for now */
                   nk_property_float(ctx, "Value", 0.0f, &values[i][j], 100.0f, 0.1f, 1.0f);
                   break;
-                case ValueConfig::sine:
+                case ValueConfig::SINE:
                   nk_property_float(ctx, "Amplitude", 0.0f, &amplitude, 100'000.0f, 0.1f, 1.0f);
                   break;
               }
@@ -263,22 +263,22 @@ int main(int argc, char** argv) {
                   case ValueConfig::MANUAL:
                     channel.set_value(channel.values[j], values[i][j]);
                     break;
-                  case ValueConfig::sine:
+                  case ValueConfig::SINE:
                     channel.set_value(channel.values[j], sine_value);
                     break;
                 }
               }
               if(nk_group_begin(ctx, "", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
                 nk_layout_row_dynamic(ctx, 25, 2);
-                if (nk_option_label(ctx, "SINE", channel.values[j].config == sine)) {
-                  channel.values[j].config = ValueConfig::sine;
+                if (nk_option_label(ctx, "SINE", channel.values[j].config == SINE)) {
+                  channel.values[j].config = ValueConfig::SINE;
                 }
                 if (nk_option_label(ctx, "MANUAL", channel.values[j].config == MANUAL)) {
                   channel.values[j].config = ValueConfig::MANUAL;
                 }
                 nk_group_end(ctx);
               }
-              if (channel.values[j].config == sine) {
+              if (channel.values[j].config == SINE) {
                 nk_layout_row_dynamic(ctx, 25, 1);
                 nk_property_int(ctx, "Frequency (hz)", 1.0f, &hertz, 1000, 1, 1.0f);
               }
