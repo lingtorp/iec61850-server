@@ -364,7 +364,7 @@ int main(int argc, char** argv) {
       float bt = dt/float(sample_rate);
 
       /* Simulate sine wave */
-      sine_value = amplitude * std::sin((bt * loops) * (180.0f/M_PI)) + displacement_y;
+      sine_value = amplitude * std::sin((bt * loops) * (hertz * 2 * M_PI)) + displacement_y;
       loops++;
 
       /* Sampled values server */
