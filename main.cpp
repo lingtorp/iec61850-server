@@ -29,6 +29,7 @@
 
 #ifdef __LINUX__
 #include <ifaddrs.h>
+#include <time.h>
 #endif
 
 /** Main loop variable */
@@ -77,14 +78,44 @@ std::vector<std::string> find_network_interface_names() {
 
   freeifaddrs(addrs);
 #elif
-  // FIXME: Windows and other platforms are unsupported
-  exit(1);
+  #error Windows and other platforms are unsupported
 #endif
 
   return network_interfaces;
 }
 
+namespace Time {
+  /** Returns current nanosecond timestamp */
+  uint64_t get_curr_nanosec() {
+    #ifdef __LINUX__
+      struct timespec time_spec;
+      clock_gettime(CLOCK_MONOTONIC, &time_spec);
+      return time_spec.tv_nsec;
+    #elif
+      #error Windows and other platforms are unsupported
+    #endif
+  }
+
+  /** Initializes the start clock time; returns time of init */
+  uint64_t init() {
+    #ifdef __LINUX__
+      static bool initialized = false;
+      static uint64_t init_time = 0;
+      if (initialized) { return init_time; }
+      struct timespec time_spec;
+      clock_gettime(CLOCK_MONOTONIC, &time_spec);
+      init_time = time_spec.tv_nsec;
+      return init_time;
+    #elif
+      #error Windows and other platforms are unsupported
+    #endif
+  }
+}
+
 int main(int argc, char** argv) {
+    /* Init clock */
+    Time::init();
+
     /* Platform */
     SDL_Window* win;
     int win_width, win_height;
@@ -366,6 +397,9 @@ int main(int argc, char** argv) {
       /* Simulate sine wave */
       sine_value = amplitude * std::sin((bt * loops) * (hertz * 2 * M_PI)) + displacement_y;
       loops++;
+
+      /* Update timestamp sent to client */
+      time_channel.set_value(time_value, Time::get_curr_nanosec() - Time::init());
 
       /* Sampled values server */
       publisher.broadcast();
