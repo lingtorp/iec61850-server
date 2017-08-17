@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
       SDL_Event evt;
       nk_input_begin(ctx);
       while (SDL_PollEvent(&evt)) {
-          if (evt.type == SDL_QUIT) goto cleanup;
+          if (evt.type == SDL_QUIT) exit(0);
           nk_sdl_handle_event(&evt);
       }
       nk_input_end(ctx);
@@ -388,6 +388,5 @@ int main(int argc, char** argv) {
       /* Update timestamp */
       Thread_sleep(bt * 1000);
     }
-cleanup:
     return 0;
 }
