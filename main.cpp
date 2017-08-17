@@ -26,10 +26,10 @@
 #include <cstring>
 #include "hal_thread.h"
 #include "publisher.hpp"
+#include "time.hpp"
 
 #ifdef __LINUX__
 #include <ifaddrs.h>
-#include <time.h>
 #endif
 
 /** Main loop variable */
@@ -82,19 +82,6 @@ std::vector<std::string> find_network_interface_names() {
 #endif
 
   return network_interfaces;
-}
-
-namespace Time {
-  /** Returns current nanosecond timestamp */
-  int32_t get_curr_nanosec() {
-    #ifdef __LINUX__
-      struct timespec time_spec;
-      clock_gettime(CLOCK_MONOTONIC, &time_spec);
-      return time_spec.tv_nsec;
-    #elif
-      #error Windows and other platforms are unsupported
-    #endif
-  }
 }
 
 int main(int argc, char** argv) {
