@@ -14,7 +14,7 @@
 #include "../../nuklear.h"
 #include "nuklear_sdl_gl3.h"
 
-#define WINDOW_WIDTH 400
+#define WINDOW_WIDTH 420
 #define WINDOW_HEIGHT 600
 
 #define MAX_VERTEX_MEMORY 512 * 1024
@@ -86,7 +86,7 @@ std::vector<std::string> find_network_interface_names() {
 
 namespace Time {
   /** Returns current nanosecond timestamp */
-  uint64_t get_curr_nanosec() {
+  int32_t get_curr_nanosec() {
     #ifdef __LINUX__
       struct timespec time_spec;
       clock_gettime(CLOCK_MONOTONIC, &time_spec);
@@ -95,27 +95,9 @@ namespace Time {
       #error Windows and other platforms are unsupported
     #endif
   }
-
-  /** Initializes the start clock time; returns time of init */
-  uint64_t init() {
-    #ifdef __LINUX__
-      static bool initialized = false;
-      static uint64_t init_time = 0;
-      if (initialized) { return init_time; }
-      struct timespec time_spec;
-      clock_gettime(CLOCK_MONOTONIC, &time_spec);
-      init_time = time_spec.tv_nsec;
-      return init_time;
-    #elif
-      #error Windows and other platforms are unsupported
-    #endif
-  }
 }
 
 int main(int argc, char** argv) {
-    /* Init clock */
-    Time::init();
-
     /* Platform */
     SDL_Window* win;
     int win_width, win_height;
@@ -165,12 +147,13 @@ int main(int argc, char** argv) {
     /** Default channel and values */
     Channel* channel1 = publisher.add_channel("svpub1");
     channel1->create_float_value();
-    channel1->create_float_value();
 
     /** Number of loops performed by the mainloop */
     static uint64_t loops = 0;
     static int old_sample_rate = sample_rate;
     static int old_hertz = hertz;
+    static int32_t last_timestamp = 0;
+    static int32_t curr_timestamp = 0;
     while(running) {
       /* Input */
       SDL_Event evt;
@@ -194,6 +177,7 @@ int main(int argc, char** argv) {
                   publisher.complete_setup();
                 }
                 publisher.running = true;
+                last_timestamp = Time::get_curr_nanosec();
               }
               if (nk_menu_item_label(ctx, "STOP", NK_TEXT_CENTERED)) {
                 /* FIXME: Resets complete state upon stopping the broadcast */
@@ -287,6 +271,10 @@ int main(int argc, char** argv) {
                 case ValueConfig::SINE:
                   nk_property_float(ctx, "Amplitude", 0.0f, &amplitude, 100'000.0f, 0.1f, 1.0f);
                   break;
+                case ValueConfig::TIMESTAMP:
+                  std::string label = "Timestamps are being sent";
+                  nk_label(ctx, label.c_str(), NK_TEXT_LEFT);
+                  break;
               }
               /* Only enable data to be set when setup is completed */
               if (publisher.setup_completed) {
@@ -297,15 +285,24 @@ int main(int argc, char** argv) {
                   case ValueConfig::SINE:
                     channel.set_value(channel.values[j], sine_value);
                     break;
+                  case ValueConfig::TIMESTAMP:
+                    curr_timestamp = Time::get_curr_nanosec();
+                    /* Send timestamp to client */
+                    channel1->set_value(channel.values[j], curr_timestamp - last_timestamp);
+                    last_timestamp = curr_timestamp;
+                    break;
                 }
               }
               if(nk_group_begin(ctx, "", NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR)) {
-                nk_layout_row_dynamic(ctx, 25, 2);
+                nk_layout_row_dynamic(ctx, 25, 3);
                 if (nk_option_label(ctx, "SINE", channel.values[j].config == SINE)) {
                   channel.values[j].config = ValueConfig::SINE;
                 }
                 if (nk_option_label(ctx, "MANUAL", channel.values[j].config == MANUAL)) {
                   channel.values[j].config = ValueConfig::MANUAL;
+                }
+                if (nk_option_label(ctx, "TIME", channel.values[j].config == TIMESTAMP)) {
+                  channel.values[j].config = ValueConfig::TIMESTAMP;
                 }
                 nk_group_end(ctx);
               }
@@ -360,7 +357,7 @@ int main(int argc, char** argv) {
           static int chan_name_lng = 0;
           nk_edit_string(ctx, NK_EDIT_FIELD, chan_name, &chan_name_lng, 64, nk_filter_default);
           nk_layout_row_dynamic(ctx, 25, 1);
-          /* Greyed out buttons during broadcasting */
+          /* Greyed out buttons during brcreate_float_valueoadcasting */
           if (!publisher.running) {
             if (nk_button_label(ctx, "New channel")) {
               publisher.add_channel(std::string(chan_name));
@@ -398,11 +395,10 @@ int main(int argc, char** argv) {
       sine_value = amplitude * std::sin((bt * loops) * (hertz * 2 * M_PI)) + displacement_y;
       loops++;
 
-      /* Update timestamp sent to client */
-      time_channel.set_value(time_value, Time::get_curr_nanosec() - Time::init());
-
       /* Sampled values server */
       publisher.broadcast();
+
+      /* Update timestamp */
       Thread_sleep(bt * 1000);
     }
 cleanup:
