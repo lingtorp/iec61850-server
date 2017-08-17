@@ -87,7 +87,6 @@ std::vector<std::string> find_network_interface_names() {
 int main(int argc, char** argv) {
     /* Platform */
     SDL_Window* win;
-    int win_width, win_height;
 
     /* GUI */
     struct nk_context* ctx;
@@ -104,7 +103,6 @@ int main(int argc, char** argv) {
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_ALLOW_HIGHDPI);
     SDL_GL_CreateContext(win);
-    SDL_GetWindowSize(win, &win_width, &win_height);
 
     /* OpenGL setup */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -117,7 +115,7 @@ int main(int argc, char** argv) {
     ctx = nk_sdl_init(win);
 
     /* Load Fonts: loads the default font */
-    struct nk_font_atlas *atlas;
+    struct nk_font_atlas* atlas;
     nk_sdl_font_stash_begin(&atlas);
     nk_sdl_font_stash_end();
 
