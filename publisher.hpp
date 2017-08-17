@@ -18,7 +18,8 @@ enum ValueType { INT, FLOAT };
 /** Dictactes what type of value manipulation is done on the value */
 /** sine = system simulates a sine wave [-1.0f, 1.0f] */
 /** MANUAL = system allows user to send whatever the is inputted in the GUI */
-enum ValueConfig { MANUAL, SINE };
+/** TIMESTAMP = delta time (nanoseconds) between broadcasts */
+enum ValueConfig { MANUAL, SINE, TIMESTAMP };
 
 /**
  * Value
@@ -62,10 +63,26 @@ public:
     return value;
   }
 
+  /** Creates a Value (more like a variable) in the channel */
+  Value create_int_value() {
+    Value value;
+    value.type = ValueType::INT;
+    value.id = SV_ASDU_addINT32(_asdu);
+    value.config = ValueConfig::MANUAL;
+    values.push_back(value);
+    return value;
+  }
+
   /** Sets the channel's Value (more like a variable) to val */
   void set_value(Value value, float val) {
     assert(value.type == ValueType::FLOAT);
     SV_ASDU_setFLOAT(_asdu, value.id, val);
+  }
+
+  /** Sets the channel's Value (more like a variable) to val */
+  void set_value(Value value, int32_t val) {
+    assert(value.type == ValueType::INT);
+    SV_ASDU_setINT32(_asdu, value.id, val);
   }
 
   /** Increments the sample count of the channel */
