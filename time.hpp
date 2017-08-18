@@ -7,7 +7,7 @@
 
 namespace Time {
   /** Returns current nanosecond timestamp */
-  int32_t get_curr_nanosec() {
+  uint64_t get_curr_nanosec() {
     #ifdef __LINUX__
       struct timespec time_spec;
       clock_gettime(CLOCK_MONOTONIC, &time_spec);
