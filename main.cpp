@@ -137,8 +137,8 @@ int main(int argc, char** argv) {
     static uint64_t loops = 0;
     static int old_sample_rate = sample_rate;
     static int old_hertz = hertz;
-    static int32_t last_timestamp = 0;
-    static int32_t curr_timestamp = 0;
+    static uint64_t last_timestamp = 0;
+    static uint64_t curr_timestamp = 0;
     while(running) {
       /* Input */
       SDL_Event evt;
@@ -272,8 +272,17 @@ int main(int argc, char** argv) {
                     break;
                   case ValueConfig::TIMESTAMP:
                     curr_timestamp = Time::get_curr_nanosec();
-                    /* Send timestamp to client */
-                    channel1->set_value(channel.values[j], curr_timestamp - last_timestamp);
+                    uint32_t timestamp;
+                    // FIXME: Durations over 2 seconds between broadcasts will not work due to uint32_t wrapping
+                    /* Check and compensate after 1 second wrapping */
+                    if (curr_timestamp < last_timestamp) {
+                      uint64_t delta = 1'000'000'000 - last_timestamp;
+                      timestamp = uint32_t(delta + curr_timestamp);
+                    } else {
+                      /* Send timestamp to client */
+                      timestamp = curr_timestamp - last_timestamp;
+                    }
+                    channel1->set_value(channel.values[j], timestamp);
                     last_timestamp = curr_timestamp;
                     break;
                 }
