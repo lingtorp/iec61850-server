@@ -80,7 +80,7 @@ public:
   }
 
   /** Sets the channel's Value (more like a variable) to val */
-  void set_value(Value value, int32_t val) {
+  void set_value(Value value, uint32_t val) {
     assert(value.type == ValueType::INT);
     SV_ASDU_setINT32(_asdu, value.id, val);
   }
