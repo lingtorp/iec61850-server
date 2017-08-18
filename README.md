@@ -63,5 +63,6 @@ All of the components of this program is portable but there is work to be done.
 - Stopping and starting the server seems to slowly corrupting some memory and
 thus will crash after a couple of iterations.
 - Our current dependency on GCC 6.3.0 means that on current Long-Term-Support (LTS) releases you need to explicitly change the *CXX* variable in the _makefile_ to *$(CXX)-6* and also install G++-6 (_see above_).
+- Sending more time values through same channel is not supported. The values will be wrong in that case
 
 Tested on Ubuntu 17.04.
