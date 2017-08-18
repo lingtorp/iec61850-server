@@ -4,6 +4,9 @@
 ![User interface #2](images/stopped-server.png)
 
 ## How to use
+# Scripts
+Inside the repository folder there is a folder called 'scripts', inside there are a couple of scripts which will update and launch the applications.
+
 Typical workflow consists of adding a number of channels (by pressing 'New channel') and by adding a number of values to these channels (by pressing 'New value' at the respective channels).
 
 Manual mode on a value results in the value on the left being sent. Sine mode uses a global sine value (which is means it is the same for all the values on all the channels). This is due to design and will probably change in a real-world application.
